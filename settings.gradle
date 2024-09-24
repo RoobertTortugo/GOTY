@@ -6,7 +6,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'Goty'
+rootProject.name = 'GOTY'
 
 include ':app-service'
 include ':model'

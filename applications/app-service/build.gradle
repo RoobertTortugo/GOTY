@@ -18,11 +18,17 @@ tasks.register('explodedJar', Copy) {
 }
 
 jar {
+    manifest {
+        attributes(
+                'Main-Class': 'co.com.bancolombia.MainApplication'
+        )
+    }
     // To disable the *-plain.jar
-    enabled = false
+//    enabled = false
 }
 
 bootJar {
     // Sets output jar name
+    mainClass = 'co.com.bancolombia.MainApplication'
     archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
 }

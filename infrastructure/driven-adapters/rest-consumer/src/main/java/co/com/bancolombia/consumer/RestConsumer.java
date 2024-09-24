@@ -23,13 +23,14 @@ import java.util.stream.Collectors;
 @Service
 @NoArgsConstructor
 public class RestConsumer implements ProductsRepository {
+    private static final String URL_PRODUCTS = "http://localhost:3100/api/products";
     private final Map<Integer, ResponseProduct> cache = new ConcurrentHashMap<>();
     private static final Logger logger = Logger.getLogger(RestConsumer.class.getName());
 
     @Override
     public List<Product> getAllProducts() {
         try {
-            HttpResponse<String> response = configureConnection("http://localhost:3100/api/products");
+            HttpResponse<String> response = configureConnection(URL_PRODUCTS);
             ObjectMapper objectMapper = new ObjectMapper();
             List<ResponseProduct> responseProductList = objectMapper.readValue(response.body(),
                     objectMapper.getTypeFactory().constructCollectionType(List.class, ResponseProduct.class));

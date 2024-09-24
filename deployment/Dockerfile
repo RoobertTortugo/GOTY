@@ -1,7 +1,14 @@
-FROM amazoncorretto:17-alpine
-VOLUME /tmp
-COPY *.jar Goty.jar
-ENV JAVA_OPTS=" -Xshareclasses:name=cacheapp,cacheDir=/cache,nonfatal -XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Djava.security.egd=file:/dev/./urandom"
-# Replace with a non-root user to avoid running the container with excessive privileges
-USER appuser
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS  -jar Goty.jar" ]
+# Utiliza una imagen base de Java adecuada
+FROM openjdk:17-jdk-alpine
+
+# Establece el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copia el archivo JAR generado por Gradle al contenedor
+COPY applications/app-service/build/libs/GOTY.jar app.jar
+
+# Exponer el puerto en el que escuchará tu aplicación (ajusta según tu configuración)
+EXPOSE 8080
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
