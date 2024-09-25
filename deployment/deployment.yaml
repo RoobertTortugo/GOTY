@@ -1,0 +1,152 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goty-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goty-app
+  template:
+    metadata:
+      labels:
+        app: goty-app
+    spec:
+      containers:
+        - name: goty-app
+          image: roobert88/appy-goty-v8:latest
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goty-app
+spec:
+  selector:
+    app: goty-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-bff
+  template:
+    metadata:
+      labels:
+        app: backend-bff
+    spec:
+      containers:
+        - name: backend-bff
+          image: gporras/goty-bsf:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: GAMES_HOST
+              value: "http://mocksserver:3100"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-bff
+spec:
+  selector:
+    app: backend-bff
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goty-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goty-front
+  template:
+    metadata:
+      labels:
+        app: goty-front
+    spec:
+      containers:
+        - name: goty-front
+          image: gporras/goty-front:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: URL
+              value: "http://backend-bff:5000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goty-front
+spec:
+  selector:
+    app: goty-front
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mocksserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mocksserver
+  template:
+    metadata:
+      labels:
+        app: mocksserver
+    spec:
+      containers:
+        - name: mocksserver
+          image: mocksserver/main
+          ports:
+            - containerPort: 3100
+            - containerPort: 3110
+          env:
+            - name: MOCKS_PATH
+              value: "/input"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mocksserver
+spec:
+  selector:
+    app: mocksserver
+  ports:
+    - protocol: TCP
+      port: 3100
+      targetPort: 3100
+      name: http-3100
+    - protocol: TCP
+      port: 3110
+      targetPort: 3110
+      name: http-3110
+  type: ClusterIP

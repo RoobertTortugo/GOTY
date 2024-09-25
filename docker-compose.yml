@@ -32,13 +32,11 @@ services:
     - URL=http://backend_bff:5000
     networks:
     - challenge-net-goty-kubernates
-  
+
   goty-app:
-    build:
-      context: ./
-      dockerfile: deployment/Dockerfile
+    image: appy-goty-v8:latest
     ports:
-      - "8080:8081"
+      - "8080:8080"
     networks:
       - challenge-net-goty-kubernates
 

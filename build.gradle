@@ -33,4 +33,14 @@ sonarqube {
     }
 }
 
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'co.com.bancolombia.MainApplication'
+        )
+    }
+    // To disable the *-plain.jar
+//    enabled = false
+}
+
 apply from: './main.gradle'

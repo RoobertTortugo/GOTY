@@ -3,8 +3,10 @@ package co.com.bancolombia.consumer;
 import co.com.bancolombia.model.product.Product;
 import co.com.bancolombia.model.products.gateways.ProductsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,16 +23,30 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
-@NoArgsConstructor
 public class RestConsumer implements ProductsRepository {
-    private static final String URL_PRODUCTS = "http://localhost:3100/api/products";
+
+    private final String BASE_URL;
+    private final String URL_PRODUCTS;
+    public final String PRODUCT;
+    public final String SIMILARS;
+
+    public RestConsumer(@Value("${adapter.restconsumer.baseurl}") String BASE_URL,
+                        @Value("${adapter.restconsumer.products}") String URL_PRODUCTS,
+                        @Value("${adapter.restconsumer.product}") String PRODUCT,
+                        @Value("${adapter.restconsumer.similar}") String SIMILARS) {
+        this.BASE_URL = BASE_URL;
+        this.URL_PRODUCTS = URL_PRODUCTS;
+        this.PRODUCT = PRODUCT;
+        this.SIMILARS = SIMILARS;
+    }
+
     private final Map<Integer, ResponseProduct> cache = new ConcurrentHashMap<>();
     private static final Logger logger = Logger.getLogger(RestConsumer.class.getName());
 
     @Override
     public List<Product> getAllProducts() {
         try {
-            HttpResponse<String> response = configureConnection(URL_PRODUCTS);
+            HttpResponse<String> response = configureConnection(BASE_URL + URL_PRODUCTS);
             ObjectMapper objectMapper = new ObjectMapper();
             List<ResponseProduct> responseProductList = objectMapper.readValue(response.body(),
                     objectMapper.getTypeFactory().constructCollectionType(List.class, ResponseProduct.class));
@@ -63,7 +79,7 @@ public class RestConsumer implements ProductsRepository {
     public List<Integer> getSimilar(int id) {
         try {
             HttpResponse<String> response =
-                    configureConnection("http://localhost:3100/api/product/" + id + "/similars");
+                    configureConnection(BASE_URL + PRODUCT + id + SIMILARS);
             if (response.statusCode() == 404) {
                 logger.info("Similar products with id " + id + " not found");
                 return new ArrayList<>();
@@ -85,7 +101,7 @@ public class RestConsumer implements ProductsRepository {
             return cache.get(productId);
         }
         try {
-            HttpResponse<String> response = configureConnection("http://localhost:3100/api/product/" + productId);
+            HttpResponse<String> response = configureConnection(BASE_URL+ PRODUCT + productId);
             if (response.statusCode() == 404) {
                 logger.info("Product with id " + productId + " not found");
                 return new ResponseProduct();
